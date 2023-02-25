@@ -1,10 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import { useNavigate } from "react-router-dom";
-import { Store } from "../Store";
-import CheckoutSteps from "../components/CheckoutSteps";
+import React, { useContext, useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import { useNavigate } from 'react-router-dom';
+import { Store } from '../Store';
+import CheckoutSteps from '../components/CheckoutSteps';
+import { PaystackButton } from 'react-paystack';
 
 export default function ShippingAddressScreen() {
   const navigate = useNavigate();
@@ -13,22 +14,50 @@ export default function ShippingAddressScreen() {
     userInfo,
     cart: { shippingAddress },
   } = state;
-  const [fullName, setFullName] = useState(shippingAddress.fullName || "");
-  const [address, setAddress] = useState(shippingAddress.address || "");
-  const [city, setCity] = useState(shippingAddress.city || "");
-  const [postalCode, setPostalCode] = useState(
-    shippingAddress.postalCode || ""
+
+  const { cart } = state;
+
+  const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100; // 123.2345 => 123.23
+  cart.itemsPrice = round2(
+    cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
   );
+  cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
+  cart.taxPrice = round2(0.15 * cart.itemsPrice);
+  cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
+
+  const [fullName, setFullName] = useState(shippingAddress.fullName || '');
+  const [address, setAddress] = useState(shippingAddress.address || '');
+  const [city, setCity] = useState(shippingAddress.city || '');
+  const [postalCode, setPostalCode] = useState(
+    shippingAddress.postalCode || ''
+  );
+  const [email, setEmail] = useState(shippingAddress.email || '');
+  console.log(state, shippingAddress);
+
   useEffect(() => {
     if (!userInfo) {
-      navigate("/signin?redirect=/shipping");
+      navigate('/signin?redirect=/shipping');
     }
   }, [userInfo, navigate]);
-  const [country, setCountry] = useState(shippingAddress.country || "");
+  const paystack = {
+    email: 'olaleye@gmail.com',
+    amount: 1000,
+    metadata: {
+      name: fullName,
+      address: address,
+    },
+    publicKey: 'pk_test_331d3b9da3cba1c0ffc99f65259e773755a7824b',
+    text: 'pay with paystack',
+    onSuccess: () => navigate('/'),
+    onClose: () => navigate('/'),
+  };
+  console.log(paystack);
+
+  const [country, setCountry] = useState(shippingAddress.country || '');
   const submitHandler = (e) => {
     e.preventDefault();
     ctxDispatch({
-      type: "SAVE_SHIPPING_ADDRESS",
+      type: 'SAVE_SHIPPING_ADDRESS',
       payload: {
         fullName,
         address,
@@ -38,7 +67,7 @@ export default function ShippingAddressScreen() {
       },
     });
     localStorage.setItem(
-      "shippingAddress",
+      'shippingAddress',
       JSON.stringify({
         fullName,
         address,
@@ -47,7 +76,7 @@ export default function ShippingAddressScreen() {
         country,
       })
     );
-    navigate("/payment");
+    navigate('/payment');
   };
   return (
     <div>
@@ -105,6 +134,7 @@ export default function ShippingAddressScreen() {
             </Button>
           </div>
         </Form>
+        <PaystackButton {...paystack} />
       </div>
     </div>
   );
