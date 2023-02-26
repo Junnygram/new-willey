@@ -1,25 +1,26 @@
-import Axios from "axios";
-import React, { useContext, useEffect, useReducer } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useNavigate } from "react-router-dom";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
-import { toast } from "react-toastify";
-import { getError } from "../utils";
-import ListGroup from "react-bootstrap/ListGroup";
-import { Store } from "../Store";
-import CheckoutSteps from "../components/CheckoutSteps";
-import LoadingBox from "../components/LoadingBox";
+import Axios from 'axios';
+import React, { useContext, useEffect, useReducer } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { Link, useNavigate } from 'react-router-dom';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Card from 'react-bootstrap/Card';
+// import Button from 'react-bootstrap/Button';
+import { toast } from 'react-toastify';
+import { getError } from '../utils';
+import ListGroup from 'react-bootstrap/ListGroup';
+import { Store } from '../Store';
+import CheckoutSteps from '../components/CheckoutSteps';
+import LoadingBox from '../components/LoadingBox';
+import { PaystackButton } from 'react-paystack';
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "CREATE_REQUEST":
+    case 'CREATE_REQUEST':
       return { ...state, loading: true };
-    case "CREATE_SUCCESS":
+    case 'CREATE_SUCCESS':
       return { ...state, loading: false };
-    case "CREATE_FAIL":
+    case 'CREATE_FAIL':
       return { ...state, loading: false };
     default:
       return state;
@@ -39,14 +40,14 @@ export default function PlaceOrderScreen() {
     cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
   );
   cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
-  cart.taxPrice = round2(0.15 * cart.itemsPrice);
+  cart.taxPrice = round2(0.25 * cart.itemsPrice);
   cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
   const placeOrderHandler = async () => {
     try {
-      dispatch({ type: "CREATE_REQUEST" });
+      dispatch({ type: 'CREATE_REQUEST' });
 
       const { data } = await Axios.post(
-        "/api/orders",
+        '/api/orders',
         {
           orderItems: cart.cartItems,
           shippingAddress: cart.shippingAddress,
@@ -62,20 +63,44 @@ export default function PlaceOrderScreen() {
           },
         }
       );
-      ctxDispatch({ type: "CART_CLEAR" });
-      dispatch({ type: "CREATE_SUCCESS" });
-      localStorage.removeItem("cartItems");
+      ctxDispatch({ type: 'CART_CLEAR' });
+      dispatch({ type: 'CREATE_SUCCESS' });
+      localStorage.removeItem('cartItems');
       navigate(`/order/${data.order._id}`);
     } catch (err) {
-      dispatch({ type: "CREATE_FAIL" });
+      dispatch({ type: 'CREATE_FAIL' });
       toast.error(getError(err));
     }
   };
   useEffect(() => {
     if (!cart.paymentMethod) {
-      navigate("/payment");
+      navigate('/payment');
     }
   }, [cart, navigate]);
+
+  let totalAmount = cart.totalPrice * 100;
+
+  const paystack = {
+    email: userInfo.email,
+    amount: totalAmount,
+    metadata: {
+      name: userInfo.fullName,
+      address: userInfo.address,
+    },
+
+    // email: 'rahman@gmail.com',
+    // amount: 1000,
+    // metadata: {
+    //   name: 'baddest',
+    //   address: 'address',
+    // },
+    publicKey: 'pk_test_331d3b9da3cba1c0ffc99f65259e773755a7824b',
+    text: ' Place Order',
+    onSuccess: () => navigate('/'),
+    onClose: () => navigate('/'),
+  };
+
+  console.log(paystack);
   return (
     <div>
       <CheckoutSteps step1 step2 step3 step4></CheckoutSteps>
@@ -119,7 +144,7 @@ export default function PlaceOrderScreen() {
                           src={item.image}
                           alt={item.name}
                           className="img-fluid rounded img-thumbnail"
-                        ></img>{" "}
+                        ></img>{' '}
                         <Link to={`/product/${item.slug}`}>{item.name}</Link>
                       </Col>
                       <Col md={3}>
@@ -142,19 +167,19 @@ export default function PlaceOrderScreen() {
                 <ListGroup.Item>
                   <Row>
                     <Col>Items</Col>
-                    <Col>${cart.itemsPrice.toFixed(2)}</Col>
+                    <Col>N{cart.itemsPrice.toFixed(2)}</Col>
                   </Row>
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <Row>
                     <Col>Shipping</Col>
-                    <Col>${cart.shippingPrice.toFixed(2)}</Col>
+                    <Col>N{cart.shippingPrice.toFixed(2)}</Col>
                   </Row>
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <Row>
                     <Col>Tax</Col>
-                    <Col>${cart.taxPrice.toFixed(2)}</Col>
+                    <Col>N{cart.taxPrice.toFixed(2)}</Col>
                   </Row>
                 </ListGroup.Item>
                 <ListGroup.Item>
@@ -163,19 +188,25 @@ export default function PlaceOrderScreen() {
                       <strong> Order Total</strong>
                     </Col>
                     <Col>
-                      <strong>${cart.totalPrice.toFixed(2)}</strong>
+                      <strong>N{cart.totalPrice.toFixed(2)}</strong>
                     </Col>
                   </Row>
                 </ListGroup.Item>
                 <ListGroup.Item>
                   <div className="d-grid">
-                    <Button
+                    {/* <Button
                       type="button"
                       onClick={placeOrderHandler}
                       disabled={cart.cartItems.length === 0}
                     >
                       Place Order
-                    </Button>
+                    </Button> */}
+                    <PaystackButton
+                      className="btn btn-info "
+                      onClick={placeOrderHandler}
+                      disabled={cart.cartItems.length === 0}
+                      {...paystack}
+                    />
                   </div>
                   {loading && <LoadingBox></LoadingBox>}
                 </ListGroup.Item>

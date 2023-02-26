@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
 import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
-import { PaystackButton } from 'react-paystack';
+// import { PaystackButton } from 'react-paystack';
 
 export default function ShippingAddressScreen() {
   const navigate = useNavigate();
@@ -15,15 +15,15 @@ export default function ShippingAddressScreen() {
     cart: { shippingAddress },
   } = state;
 
-  const { cart } = state;
+  // const { cart } = state;
 
-  const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100; // 123.2345 => 123.23
-  cart.itemsPrice = round2(
-    cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
-  );
-  cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
-  cart.taxPrice = round2(0.15 * cart.itemsPrice);
-  cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
+  // const round2 = (num) => Math.round(num * 100 + Number.EPSILON) / 100; // 123.2345 => 123.23
+  // cart.itemsPrice = round2(
+  //   cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
+  // );
+  // cart.shippingPrice = cart.itemsPrice > 100 ? round2(0) : round2(10);
+  // cart.taxPrice = round2(0.15 * cart.itemsPrice);
+  // cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
 
   const [fullName, setFullName] = useState(shippingAddress.fullName || '');
   const [address, setAddress] = useState(shippingAddress.address || '');
@@ -39,19 +39,19 @@ export default function ShippingAddressScreen() {
       navigate('/signin?redirect=/shipping');
     }
   }, [userInfo, navigate]);
-  const paystack = {
-    email: 'olaleye@gmail.com',
-    amount: 1000,
-    metadata: {
-      name: fullName,
-      address: address,
-    },
-    publicKey: 'pk_test_331d3b9da3cba1c0ffc99f65259e773755a7824b',
-    text: 'pay with paystack',
-    onSuccess: () => navigate('/'),
-    onClose: () => navigate('/'),
-  };
-  console.log(paystack);
+  // const paystack = {
+  //   email: email,
+  //   amount: 1000,
+  //   metadata: {
+  //     name: fullName,
+  //     address: address,
+  //   },
+  //   publicKey: 'pk_test_331d3b9da3cba1c0ffc99f65259e773755a7824b',
+  //   text: 'pay with paystack',
+  //   onSuccess: () => navigate('/'),
+  //   onClose: () => navigate('/'),
+  // };
+  // console.log(paystack);
 
   const [country, setCountry] = useState(shippingAddress.country || '');
   const submitHandler = (e) => {
@@ -60,6 +60,7 @@ export default function ShippingAddressScreen() {
       type: 'SAVE_SHIPPING_ADDRESS',
       payload: {
         fullName,
+        email,
         address,
         city,
         postalCode,
@@ -70,6 +71,7 @@ export default function ShippingAddressScreen() {
       'shippingAddress',
       JSON.stringify({
         fullName,
+        email,
         address,
         city,
         postalCode,
@@ -93,6 +95,14 @@ export default function ShippingAddressScreen() {
             <Form.Control
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3" controlId="postalCode">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
           </Form.Group>
@@ -128,13 +138,14 @@ export default function ShippingAddressScreen() {
               required
             />
           </Form.Group>
+          {/* <div className="mb-3 d-flex justify-content-between"> */}
           <div className="mb-3">
-            <Button variant="primary" type="submit">
-              Continue
-            </Button>
+            <Button type="submit">Continue</Button>
+            {/* <PaystackButton className="btn btn-info " {...paystack} /> */}
           </div>
         </Form>
-        <PaystackButton {...paystack} />
+
+        {/* <PaystackButton {...paystack} /> */}
       </div>
     </div>
   );
