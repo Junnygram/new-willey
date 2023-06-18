@@ -13,6 +13,7 @@ import { Store } from '../Store';
 import CheckoutSteps from '../components/CheckoutSteps';
 import LoadingBox from '../components/LoadingBox';
 import { PaystackButton } from 'react-paystack';
+import { useParams } from 'react-router-dom';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -27,6 +28,8 @@ const reducer = (state, action) => {
   }
 };
 export default function PlaceOrderScreen() {
+  // const { id: orderId } = useParams();
+
   const navigate = useNavigate();
   const [{ loading }, dispatch] = useReducer(reducer, {
     loading: false,
@@ -83,23 +86,22 @@ export default function PlaceOrderScreen() {
   const paystack = {
     email: userInfo.email,
     amount: totalAmount,
+
     metadata: {
-      name: userInfo.fullName,
-      address: userInfo.address,
+      name: cart.shippingAddress.fullName,
+      address: cart.shippingAddress.address,
     },
 
-    // email: 'rahman@gmail.com',
-    // amount: 1000,
-    // metadata: {
-    //   name: 'baddest',
-    //   address: 'address',
-    // },
     publicKey: 'pk_test_331d3b9da3cba1c0ffc99f65259e773755a7824b',
     text: ' Place Order',
-    onSuccess: () => navigate('/'),
-    onClose: () => navigate('/'),
-  };
 
+    onSuccess: () => placeOrderHandler(),
+
+    onClose: function () {
+      alert('Transaction was not completed, window closed.');
+    },
+  };
+  // console.log(cart);
   console.log(paystack);
   return (
     <div>

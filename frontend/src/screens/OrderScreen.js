@@ -290,7 +290,7 @@ export default function OrderScreen() {
                   </Row>
                 </ListGroup.Item>
 
-                {!order.isPaid && (
+                {/* {!order.isPaid && (
                   <ListGroup.Item>
                     {isPending ? (
                       <LoadingBox />
@@ -305,7 +305,7 @@ export default function OrderScreen() {
                     )}
                     {loadingPay && <LoadingBox></LoadingBox>}
                   </ListGroup.Item>
-                )}
+                )} */}
                 {userInfo.isAdmin && order.isPaid && !order.isDelivered && (
                   <ListGroup.Item>
                     {loadingDeliver && <LoadingBox></LoadingBox>}
@@ -324,31 +324,3 @@ export default function OrderScreen() {
     </div>
   );
 }
-
-// use it in OrderScreen.js
-
-// import { loadStripe } from '@stripe/stripe-js/pure';
-// import StripeCheckout from '../components/StripeCheckout';
-// in useEffect:
-
-// const [stripe, setStripe] = useState(null);
-// useEffect(() => {
-//     const addStripeScript = async () => {
-//       const { data: clientId } = await axios.get('/api/stripe/key');
-//       const stripeObj = await loadStripe(clientId);
-//       setStripe(stripeObj);
-//     };
-//     if (order.paymentMethod === 'stripe') {
-//         if (!stripe) {
-//           addStripeScript();
-//         }
-// in the return part:
-
-// {!order.isPaid && !stripe && <LoadingBox />}
-//                   {!order.isPaid && stripe && (
-//                     <StripeCheckout
-//                       stripe={stripe}
-//                       orderId={order._id}
-//                       handleSuccessPayment={handleSuccessPayment}
-//                     />
-//                   )}
